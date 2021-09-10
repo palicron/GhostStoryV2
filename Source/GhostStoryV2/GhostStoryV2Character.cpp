@@ -30,8 +30,10 @@ AGhostStoryV2Character::AGhostStoryV2Character()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
 
+	BaseCameraLocation = GetFirstPersonCameraComponent()->GetRelativeLocation();
+	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
+	
 }
 
 void AGhostStoryV2Character::BeginPlay()
@@ -57,6 +59,9 @@ void AGhostStoryV2Character::SetupPlayerInputComponent(class UInputComponent* Pl
 
 	PlayerInputComponent->BindAction("Spring", IE_Pressed, this, &AGhostStoryV2Character::StardSpring);
 	PlayerInputComponent->BindAction("Spring", IE_Released, this, &AGhostStoryV2Character::EndSpring);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AGhostStoryV2Character::StartCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AGhostStoryV2Character::EndCrouch);
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
@@ -70,7 +75,8 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-
+	CurrentInterpolatedLocation = FMath::VInterpTo(CurrentInterpolatedLocation, BaseCameraLocation, DeltaSeconds, 10.0f);
+	GetFirstPersonCameraComponent()->SetRelativeLocation(CurrentInterpolatedLocation);
 	
 	
 }
@@ -131,5 +137,46 @@ void AGhostStoryV2Character::EndSpring()
 	Running = false;
 	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed / RuningMultiply;
 }
+
+void AGhostStoryV2Character::StartCrouch()
+{
+	if(!GetCharacterMovement()->IsCrouching())
+	{
+		GetCharacterMovement()->bWantsToCrouch = true;
+		GetCharacterMovement()->Crouch();
+	}
+}
+
+void AGhostStoryV2Character::EndCrouch()
+{
+	if (GetCharacterMovement()->IsCrouching())
+	{
+		GetCharacterMovement()->bWantsToCrouch = false;
+		GetCharacterMovement()->UnCrouch();
+	}
+}
+
+void AGhostStoryV2Character::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	//TODO que solo pase si esto en el ground
+	if(!GetCharacterMovement()->IsFalling())
+	{
+		CurrentInterpolatedLocation = BaseCameraLocation + FVector(0, 0, ScaledHalfHeightAdjust);
+	}
+	
+}
+
+void AGhostStoryV2Character::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	if (!GetCharacterMovement()->IsFalling())
+	{
+	CurrentInterpolatedLocation = BaseCameraLocation - FVector(0, 0, ScaledHalfHeightAdjust);
+	}
+}
+
+
+
+
+
 
 

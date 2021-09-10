@@ -54,38 +54,48 @@ public:
 		bool Running = false;
 
 protected:
+
+	FVector BaseCameraLocation;
+
+	FVector CurrentInterpolatedLocation;
 	
 	float DeltaCamera = 0;
-	/** Handles moving forward/backward */
-	void MoveForward(float Val);
-
-	/** Handles stafing movement, left and right */
-	void MoveRight(float Val);
-
 	/**
 	 * Called via input to turn at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void TurnAtRate(float Rate);
-
 	/**
 	 * Called via input to turn look up/down at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
-
-
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	//Movement Functions
+
+	void MoveForward(float Val);
+
+	void MoveRight(float Val);
+	
 	UFUNCTION(BlueprintCallable)
 		void StardSpring();
 	UFUNCTION(BlueprintCallable)
 		void EndSpring();
+
+	UFUNCTION(BlueprintCallable)
+	void StartCrouch();
+	UFUNCTION(BlueprintCallable)
+	void EndCrouch();
+
+	UFUNCTION()
+		virtual void OnStartCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust) override;
+	UFUNCTION()
+		virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
 public:
 

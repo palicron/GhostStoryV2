@@ -13,7 +13,7 @@ class UCameraComponent;
 class UMotionControllerComponent;
 class UAnimMontage;
 class USoundBase;
-
+class UCameraShakeBase;
 UCLASS(config=Game)
 class AGhostStoryV2Character : public ACharacter
 {
@@ -33,20 +33,28 @@ protected:
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)
 	float BaseTurnRate;
-
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)
 	float BaseLookUpRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+		TSubclassOf<UCameraShakeBase> Idle_Camara;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+		TSubclassOf<UCameraShakeBase> Walking_Camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+		TSubclassOf<UCameraShakeBase> Runing_Camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		float walkingBaseSpeed = 320.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		float RuningMultiply = 1.9f;
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player Stats")
+		bool Running = false;
 
 protected:
 	
-
-
-
+	float DeltaCamera = 0;
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -66,12 +74,17 @@ protected:
 	void LookUpAtRate(float Rate);
 
 
-	
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(BlueprintCallable)
+		void StardSpring();
+	UFUNCTION(BlueprintCallable)
+		void EndSpring();
 
 public:
 

@@ -39,11 +39,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)
 	float BaseLookUpRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-		TSubclassOf<UCameraShakeBase> Idle_Camara;
+	TSubclassOf<UCameraShakeBase> Idle_Camara;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-		TSubclassOf<UCameraShakeBase> Walking_Camera;
+	TSubclassOf<UCameraShakeBase> Walking_Camera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-		TSubclassOf<UCameraShakeBase> Runing_Camera;
+	TSubclassOf<UCameraShakeBase> Runing_Camera;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		float walkingBaseSpeed = 320.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")

@@ -66,7 +66,7 @@ void AGhostStoryV2Character::SetupPlayerInputComponent(class UInputComponent* Pl
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AGhostStoryV2Character::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &AGhostStoryV2Character::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGhostStoryV2Character::LookUpAtRate);
@@ -98,7 +98,7 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 
 void AGhostStoryV2Character::MoveForward(float Value)
 {
-
+	
 	
 	if( FMath::Abs(GetVelocity().Size()) <=5.0f && !Running)
 	{
@@ -112,6 +112,8 @@ void AGhostStoryV2Character::MoveForward(float Value)
 	{
 		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Walking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
 	}
+	if (!bCanControlCharacterForward)
+		return;
 	if (Value != 0.0f)
 	{
 		// add movement in that direction
@@ -121,6 +123,9 @@ void AGhostStoryV2Character::MoveForward(float Value)
 
 void AGhostStoryV2Character::MoveRight(float Value)
 {
+
+	if (!bCanControlCharacterRight)
+		return;
 	if (Value != 0.0f)
 	{
 		// add movement in that direction
@@ -130,12 +135,16 @@ void AGhostStoryV2Character::MoveRight(float Value)
 
 void AGhostStoryV2Character::TurnAtRate(float Rate)
 {
+	if (!bCanTurnRate)
+		return;
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AGhostStoryV2Character::LookUpAtRate(float Rate)
 {
+	if (!bCanTurnUp)
+		return
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
@@ -237,6 +246,13 @@ void AGhostStoryV2Character::Probe()
 		GetCharacterMovement()->Crouch();
 		MovingplayerState = EMovementStay::EM_Probe;
 	}
+}
+
+void AGhostStoryV2Character::AddControllerYawInput(float Val)
+{
+	//if (!bCanTurnRate)
+	//	return;
+	Super::AddControllerYawInput(Val);
 }
 
 

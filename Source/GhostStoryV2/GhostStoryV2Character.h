@@ -58,7 +58,14 @@ public:
 		TSubclassOf<UCameraShakeBase> Runing_Camera;
 
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		bool bCanControlCharacterForward = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		bool bCanControlCharacterRight = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		bool bCanTurnRate = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		bool bCanTurnUp = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		EMovementStay MovingplayerState = EMovementStay::EM_Walk;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
@@ -131,6 +138,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 		void Probe();
+
+	virtual void AddControllerYawInput(float Val) override;
 
 public:
 

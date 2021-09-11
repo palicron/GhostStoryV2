@@ -32,6 +32,7 @@ AGhostStoryV2Character::AGhostStoryV2Character()
 
 
 	BaseCameraLocation = GetFirstPersonCameraComponent()->GetRelativeLocation();
+	
 	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
 	
 }
@@ -75,8 +76,21 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	
 	CurrentInterpolatedLocation = FMath::VInterpTo(CurrentInterpolatedLocation, BaseCameraLocation, DeltaSeconds, 10.0f);
 	GetFirstPersonCameraComponent()->SetRelativeLocation(CurrentInterpolatedLocation);
+
+	
+
+	if(bProbeTimer && MovingplayerState != EMovementStay::EM_Probe)
+	{
+		probeTimePress += DeltaSeconds;
+		if(probeTimePress>=PressTimeToProbe)
+		{
+		
+			Probe();
+		}
+	}
 	
 	
 }
@@ -128,39 +142,74 @@ void AGhostStoryV2Character::LookUpAtRate(float Rate)
 
 void AGhostStoryV2Character::StardSpring()
 {
-	Running = true;
-	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed* RuningMultiply;
+	if(MovingplayerState== EMovementStay::EM_Spring || MovingplayerState == EMovementStay::EM_Walk)
+	{
+		MovingplayerState = EMovementStay::EM_Spring;
+		Running = true;
+		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed * RuningMultiply;
+	}
+
 }
 
 void AGhostStoryV2Character::EndSpring()
 {
-	Running = false;
-	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed / RuningMultiply;
+	if(MovingplayerState == EMovementStay::EM_Spring)
+	{
+		MovingplayerState = EMovementStay::EM_Walk;
+		Running = false;
+		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed / RuningMultiply;
+	}
+
 }
 
 void AGhostStoryV2Character::StartCrouch()
 {
 	if(!GetCharacterMovement()->IsCrouching())
 	{
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
 		GetCharacterMovement()->bWantsToCrouch = true;
 		GetCharacterMovement()->Crouch();
+		if(GetCharacterMovement()->IsCrouching())
+		{
+			MovingplayerState = EMovementStay::EM_Crouch;
+			bProbeTimer = true;
+			probeTimePress = 0;
+			
+		}
+	
+	}
+	else
+	{
+		
+	
+		GetCharacterMovement()->bWantsToCrouch = false;
+		GetCharacterMovement()->UnCrouch();
+		if(!bIsCrouched)
+		{
+			MovingplayerState = EMovementStay::EM_Walk;
+			GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+			GetCharacterMovement()->CrouchedHalfHeight = CapsuleMidheigt;
+			
+	
+		}
+		bProbeTimer = false;
+	
 	}
 }
 
 void AGhostStoryV2Character::EndCrouch()
 {
-	if (GetCharacterMovement()->IsCrouching())
-	{
-		GetCharacterMovement()->bWantsToCrouch = false;
-		GetCharacterMovement()->UnCrouch();
-	}
+	bProbeTimer = false;
+	
+	
 }
 
 void AGhostStoryV2Character::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	//TODO que solo pase si esto en el ground
+
 	if(!GetCharacterMovement()->IsFalling())
 	{
+		
 		CurrentInterpolatedLocation = BaseCameraLocation + FVector(0, 0, ScaledHalfHeightAdjust);
 	}
 	
@@ -171,6 +220,22 @@ void AGhostStoryV2Character::OnEndCrouch(float HalfHeightAdjust, float ScaledHal
 	if (!GetCharacterMovement()->IsFalling())
 	{
 	CurrentInterpolatedLocation = BaseCameraLocation - FVector(0, 0, ScaledHalfHeightAdjust);
+	}
+}
+
+void AGhostStoryV2Character::Probe()
+{
+
+	if (MovingplayerState==EMovementStay::EM_Crouch)
+	{
+	 
+		
+		GetCapsuleComponent()->SetCapsuleRadius(ProbeCapsuleRadius);
+		GetCharacterMovement()->CrouchedHalfHeight = ProbeCapsuleMidheigt;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.f;
+		GetCharacterMovement()->bWantsToCrouch = true;
+		GetCharacterMovement()->Crouch();
+		MovingplayerState = EMovementStay::EM_Probe;
 	}
 }
 

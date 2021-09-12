@@ -166,7 +166,7 @@ void AGhostStoryV2Character::EndSpring()
 	{
 		MovingplayerState = EMovementStay::EM_Walk;
 		Running = false;
-		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed / RuningMultiply;
+		GetCharacterMovement()->MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed / RuningMultiply;
 	}
 
 }

@@ -155,7 +155,7 @@ void AGhostStoryV2Character::StardSpring()
 	{
 		MovingplayerState = EMovementStay::EM_Spring;
 		Running = true;
-		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed * RuningMultiply;
+		SetMovementType();
 	}
 
 }
@@ -166,7 +166,7 @@ void AGhostStoryV2Character::EndSpring()
 	{
 		MovingplayerState = EMovementStay::EM_Walk;
 		Running = false;
-		GetCharacterMovement()->MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed / RuningMultiply;
+		SetMovementType();
 	}
 
 }
@@ -183,7 +183,7 @@ void AGhostStoryV2Character::StartCrouch()
 			MovingplayerState = EMovementStay::EM_Crouch;
 			bProbeTimer = true;
 			probeTimePress = 0;
-			
+			SetMovementType();
 		}
 	
 	}
@@ -198,7 +198,7 @@ void AGhostStoryV2Character::StartCrouch()
 			MovingplayerState = EMovementStay::EM_Walk;
 			GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
 			GetCharacterMovement()->CrouchedHalfHeight = CapsuleMidheigt;
-			
+			SetMovementType();
 	
 		}
 		bProbeTimer = false;
@@ -245,6 +245,7 @@ void AGhostStoryV2Character::Probe()
 		GetCharacterMovement()->bWantsToCrouch = true;
 		GetCharacterMovement()->Crouch();
 		MovingplayerState = EMovementStay::EM_Probe;
+		SetMovementType();
 	}
 }
 
@@ -253,6 +254,47 @@ void AGhostStoryV2Character::AddControllerYawInput(float Val)
 	//if (!bCanTurnRate)
 	//	return;
 	Super::AddControllerYawInput(Val);
+}
+
+void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float lookUpAngelimit)
+{
+	switch (MovingplayerState)
+	{
+	case EMovementStay::EM_Walk:
+		bCanControlCharacterForward = true;
+		bCanControlCharacterRight = true;
+		bCanTurnRate = true;
+		bCanTurnUp = true;
+		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
+		break;
+	case EMovementStay::EM_Spring:
+		bCanControlCharacterForward = true;
+		bCanControlCharacterRight = true;
+		bCanTurnRate = true;
+		bCanTurnUp = true;
+		GetCharacterMovement()->MaxWalkSpeed = RuningBaseSpeed;
+		break;
+	case EMovementStay::EM_Crouch:
+		bCanControlCharacterForward = true;
+		bCanControlCharacterRight = true;
+		bCanTurnRate = true;
+		bCanTurnUp = true;
+		GetCharacterMovement()->MaxWalkSpeed = CrouchingBaseSpeed;
+		break;
+	case EMovementStay::EM_Probe:
+		bCanControlCharacterForward = true;
+		bCanControlCharacterRight = true;
+		bCanTurnRate = true;
+		bCanTurnUp = true;
+		GetCharacterMovement()->MaxWalkSpeed = ProbeBaseSpeed;
+		break;
+	case EMovementStay::EM_Straff:
+		break;
+	case EMovementStay::EM_Climing:
+		break;
+	case EMovementStay::EM_Lader:
+		break;
+	}
 }
 
 

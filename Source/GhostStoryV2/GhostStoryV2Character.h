@@ -71,7 +71,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		float walkingBaseSpeed = 320.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
-		float RuningMultiply = 1.9f;
+		float RuningBaseSpeed = 450.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		float CrouchingBaseSpeed = 150.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		float ProbeBaseSpeed = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		float WallWalkBaseSpeed = 100.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player Stats")
 		bool Running = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player Stats")
@@ -145,6 +151,9 @@ public:
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetMovementType(FVector BlockMovementVector = FVector(0,0,0),float lookUpAngelimit = 0.0f);
 
 };
 

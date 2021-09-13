@@ -56,6 +56,12 @@ public:
 		TSubclassOf<UCameraShakeBase> Walking_Camera;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 		TSubclassOf<UCameraShakeBase> Runing_Camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+		TSubclassOf<UCameraShakeBase> Crouch_Camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+		TSubclassOf<UCameraShakeBase> Probe_Camera;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+		TSubclassOf<UCameraShakeBase> WalkWalking_Camera;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
@@ -95,16 +101,15 @@ public:
 
 protected:
 
-
-	
 	FVector BaseCameraLocation;
-
 
 	FVector CurrentInterpolatedLocation;
 	
 	float DeltaCamera = 0;
 
 	float probeTimePress = 0;
+
+	FVector WallDirection = FVector::ZeroVector;
 	/**
 	 * Called via input to turn at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
@@ -147,6 +152,10 @@ protected:
 
 	virtual void AddControllerYawInput(float Val) override;
 
+	UFUNCTION(BlueprintCallable)
+		void SetCameraShake();
+
+
 public:
 
 	/** Returns FirstPersonCameraComponent subobject **/
@@ -154,6 +163,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetMovementType(FVector BlockMovementVector = FVector(0,0,0),float lookUpAngelimit = 0.0f);
+
 
 };
 

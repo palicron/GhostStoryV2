@@ -78,20 +78,16 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 
 	
 	CurrentInterpolatedLocation = FMath::VInterpTo(CurrentInterpolatedLocation, BaseCameraLocation, DeltaSeconds, 10.0f);
-	GetFirstPersonCameraComponent()->SetRelativeLocation(CurrentInterpolatedLocation);
-
-	
-
+	GetFirstPersonCameraComponent()->SetRelativeLocation(CurrentInterpolatedLocation);	
 	if(bProbeTimer && MovingplayerState != EMovementStay::EM_Probe)
 	{
 		probeTimePress += DeltaSeconds;
 		if(probeTimePress>=PressTimeToProbe)
 		{
-		
 			Probe();
 		}
 	}
-	
+	SetCameraShake();
 	
 }
 
@@ -99,19 +95,7 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 void AGhostStoryV2Character::MoveForward(float Value)
 {
 	
-	
-	if( FMath::Abs(GetVelocity().Size()) <=5.0f && !Running)
-	{
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Idle_Camara, GetActorLocation(), 100.0, 0.0, 0.0);
-	}
-	else if (FMath::Abs(GetVelocity().Size()) >= 5.0f && Running)
-	{
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Runing_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
-	}
-	else
-	{
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Walking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
-	}
+
 	if (!bCanControlCharacterForward)
 		return;
 	if (Value != 0.0f)
@@ -256,6 +240,8 @@ void AGhostStoryV2Character::AddControllerYawInput(float Val)
 	Super::AddControllerYawInput(Val);
 }
 
+
+
 void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float lookUpAngelimit)
 {
 	switch (MovingplayerState)
@@ -289,6 +275,15 @@ void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float
 		GetCharacterMovement()->MaxWalkSpeed = ProbeBaseSpeed;
 		break;
 	case EMovementStay::EM_Straff:
+		bCanControlCharacterForward = false;
+		bCanControlCharacterRight = true;
+		bCanTurnRate = false;
+		bCanTurnUp = false;
+		GetCharacterMovement()->MaxWalkSpeed = WallWalkBaseSpeed;
+		if(BlockMovementVector!=FVector::ZeroVector)
+		{
+			WallDirection = BlockMovementVector.GetSafeNormal();
+		}
 		break;
 	case EMovementStay::EM_Climing:
 		break;
@@ -297,7 +292,38 @@ void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float
 	}
 }
 
-
+void AGhostStoryV2Character::SetCameraShake()
+{
+	if (FMath::Abs(GetVelocity().Size()) <= 5.0f)
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Idle_Camara, GetActorLocation(), 100.0, 0.0, 0.0);
+	}
+	else
+	{
+		switch (MovingplayerState)
+		{
+		case EMovementStay::EM_Walk:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Walking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
+			break;
+		case EMovementStay::EM_Spring:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Runing_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
+			break;
+		case EMovementStay::EM_Crouch:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Crouch_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
+			break;
+		case EMovementStay::EM_Probe:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), Probe_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
+			break;
+		case EMovementStay::EM_Straff:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), WalkWalking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
+			break;
+		case EMovementStay::EM_Climing:
+			break;
+		case EMovementStay::EM_Lader:
+			break;
+		}
+	}
+}
 
 
 

@@ -32,9 +32,9 @@ AGhostStoryV2Character::AGhostStoryV2Character()
 
 
 	BaseCameraLocation = GetFirstPersonCameraComponent()->GetRelativeLocation();
-	
+
 	GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
-	
+
 }
 
 void AGhostStoryV2Character::BeginPlay()
@@ -76,33 +76,48 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	
+
 	CurrentInterpolatedLocation = FMath::VInterpTo(CurrentInterpolatedLocation, BaseCameraLocation, DeltaSeconds, 10.0f);
-	GetFirstPersonCameraComponent()->SetRelativeLocation(CurrentInterpolatedLocation);	
-	if(bProbeTimer && MovingplayerState != EMovementStay::EM_Probe)
+	GetFirstPersonCameraComponent()->SetRelativeLocation(CurrentInterpolatedLocation);
+	if (bProbeTimer && MovingplayerState != EMovementStay::EM_Probe)
 	{
 		probeTimePress += DeltaSeconds;
-		if(probeTimePress>=PressTimeToProbe)
+		if (probeTimePress >= PressTimeToProbe)
 		{
 			Probe();
 		}
 	}
 	SetCameraShake();
-	
+
 }
 
 
 void AGhostStoryV2Character::MoveForward(float Value)
 {
-	
+
 
 	if (!bCanControlCharacterForward)
 		return;
-	if (Value != 0.0f)
+
+	switch (MovingplayerState)
 	{
-		// add movement in that direction
-		AddMovementInput(GetActorForwardVector(), Value);
+	case EMovementStay::EM_Lader:
+		if (Value != 0.0f)
+		{
+			
+		AddMovementInput(GetActorUpVector(), Value);
+		}
+		break;
+	default:
+		// calculate delta for this frame from the rate information
+		if (Value != 0.0f)
+		{
+			// add movement in that direction
+			AddMovementInput(GetActorForwardVector(), Value);
+		}
+		break;
 	}
+	
 }
 
 void AGhostStoryV2Character::MoveRight(float Value)
@@ -110,32 +125,54 @@ void AGhostStoryV2Character::MoveRight(float Value)
 
 	if (!bCanControlCharacterRight)
 		return;
-	if (Value != 0.0f)
+
+	switch (MovingplayerState)
 	{
-		// add movement in that direction
-		AddMovementInput(GetActorRightVector(), Value);
+	case EMovementStay::EM_Straff:
+		
+		if (Value != 0.0f )
+		{
+			AddMovementInput(WallDirection, Value);
+		}
+		break;
+	case EMovementStay::EM_Lader:
+		break;
+	default:
+		// calculate delta for this frame from the rate information
+		if (Value != 0.0f)
+		{
+			// add movement in that direction
+			AddMovementInput(GetActorRightVector(), Value);
+		}
+		break;
 	}
+
+
 }
 
 void AGhostStoryV2Character::TurnAtRate(float Rate)
 {
 	if (!bCanTurnRate)
 		return;
+
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+
+
+
 }
 
 void AGhostStoryV2Character::LookUpAtRate(float Rate)
 {
 	if (!bCanTurnUp)
 		return
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+		// calculate delta for this frame from the rate information
+		AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AGhostStoryV2Character::StardSpring()
 {
-	if(MovingplayerState== EMovementStay::EM_Spring || MovingplayerState == EMovementStay::EM_Walk)
+	if (MovingplayerState == EMovementStay::EM_Spring || MovingplayerState == EMovementStay::EM_Walk)
 	{
 		MovingplayerState = EMovementStay::EM_Spring;
 		Running = true;
@@ -146,7 +183,7 @@ void AGhostStoryV2Character::StardSpring()
 
 void AGhostStoryV2Character::EndSpring()
 {
-	if(MovingplayerState == EMovementStay::EM_Spring)
+	if (MovingplayerState == EMovementStay::EM_Spring)
 	{
 		MovingplayerState = EMovementStay::EM_Walk;
 		Running = false;
@@ -157,72 +194,72 @@ void AGhostStoryV2Character::EndSpring()
 
 void AGhostStoryV2Character::StartCrouch()
 {
-	if(!GetCharacterMovement()->IsCrouching())
+	if (!GetCharacterMovement()->IsCrouching())
 	{
 		GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
 		GetCharacterMovement()->bWantsToCrouch = true;
 		GetCharacterMovement()->Crouch();
-		if(GetCharacterMovement()->IsCrouching())
+		if (GetCharacterMovement()->IsCrouching())
 		{
 			MovingplayerState = EMovementStay::EM_Crouch;
 			bProbeTimer = true;
 			probeTimePress = 0;
 			SetMovementType();
 		}
-	
+
 	}
 	else
 	{
-		
-	
+
+
 		GetCharacterMovement()->bWantsToCrouch = false;
 		GetCharacterMovement()->UnCrouch();
-		if(!bIsCrouched)
+		if (!bIsCrouched)
 		{
 			MovingplayerState = EMovementStay::EM_Walk;
 			GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
 			GetCharacterMovement()->CrouchedHalfHeight = CapsuleMidheigt;
 			SetMovementType();
-	
+
 		}
 		bProbeTimer = false;
-	
+
 	}
 }
 
 void AGhostStoryV2Character::EndCrouch()
 {
 	bProbeTimer = false;
-	
-	
+
+
 }
 
 void AGhostStoryV2Character::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
 
-	if(!GetCharacterMovement()->IsFalling())
+	if (!GetCharacterMovement()->IsFalling())
 	{
-		
+
 		CurrentInterpolatedLocation = BaseCameraLocation + FVector(0, 0, ScaledHalfHeightAdjust);
 	}
-	
+
 }
 
 void AGhostStoryV2Character::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
 	if (!GetCharacterMovement()->IsFalling())
 	{
-	CurrentInterpolatedLocation = BaseCameraLocation - FVector(0, 0, ScaledHalfHeightAdjust);
+		CurrentInterpolatedLocation = BaseCameraLocation - FVector(0, 0, ScaledHalfHeightAdjust);
 	}
 }
 
 void AGhostStoryV2Character::Probe()
 {
 
-	if (MovingplayerState==EMovementStay::EM_Crouch)
+	if (MovingplayerState == EMovementStay::EM_Crouch)
 	{
-	 
-		
+
+
 		GetCapsuleComponent()->SetCapsuleRadius(ProbeCapsuleRadius);
 		GetCharacterMovement()->CrouchedHalfHeight = ProbeCapsuleMidheigt;
 		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.f;
@@ -242,7 +279,7 @@ void AGhostStoryV2Character::AddControllerYawInput(float Val)
 
 
 
-void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float lookUpAngelimit)
+void AGhostStoryV2Character::SetMovementType(FVector BlockMovementVector, float lookUpAngelimit)
 {
 	switch (MovingplayerState)
 	{
@@ -252,6 +289,7 @@ void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float
 		bCanTurnRate = true;
 		bCanTurnUp = true;
 		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		break;
 	case EMovementStay::EM_Spring:
 		bCanControlCharacterForward = true;
@@ -280,7 +318,7 @@ void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float
 		bCanTurnRate = false;
 		bCanTurnUp = false;
 		GetCharacterMovement()->MaxWalkSpeed = WallWalkBaseSpeed;
-		if(BlockMovementVector!=FVector::ZeroVector)
+		if (BlockMovementVector != FVector::ZeroVector)
 		{
 			WallDirection = BlockMovementVector.GetSafeNormal();
 		}
@@ -288,7 +326,13 @@ void AGhostStoryV2Character::SetMovementType( FVector BlockMovementVector, float
 	case EMovementStay::EM_Climing:
 		break;
 	case EMovementStay::EM_Lader:
+		bCanControlCharacterForward = true;
+		bCanControlCharacterRight = false;
+		bCanTurnRate = true;
+		bCanTurnUp = true;
+		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 		break;
+	
 	}
 }
 

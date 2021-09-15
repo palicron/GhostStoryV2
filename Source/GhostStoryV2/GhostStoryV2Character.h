@@ -108,8 +108,10 @@ protected:
 	float DeltaCamera = 0;
 
 	float probeTimePress = 0;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	FVector WallDirection = FVector::ZeroVector;
+	
 	/**
 	 * Called via input to turn at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate

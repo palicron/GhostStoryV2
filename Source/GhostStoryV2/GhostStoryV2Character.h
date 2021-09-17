@@ -98,6 +98,11 @@ public:
 		float CapsuleRadius = 40.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player Stats")
 		float CapsuleMidheigt = 50.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player Movement")
+		class AActionInteractive* CurrentInteractive = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Movement")
+		FVector WallDirection = FVector::ZeroVector;
+
 
 protected:
 
@@ -109,8 +114,6 @@ protected:
 
 	float probeTimePress = 0;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")
-	FVector WallDirection = FVector::ZeroVector;
 	
 	/**
 	 * Called via input to turn at a given rate.
@@ -156,6 +159,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 		void SetCameraShake();
+
+	void TryToMakeAMoveAction();
+	
 
 
 public:

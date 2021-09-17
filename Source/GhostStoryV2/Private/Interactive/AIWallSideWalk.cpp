@@ -5,6 +5,7 @@
 
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GhostStoryV2/GhostStoryV2Character.h"
 #include "Components/ChildActorComponent.h"
 #if WITH_EDITOR
@@ -21,8 +22,11 @@ AAIWallSideWalk::AAIWallSideWalk()
 	ActorPostRight = CreateDefaultSubobject<UChildActorComponent>(TEXT("Right Entry"));
 	ActorPostLeft->SetRelativeLocation(FVector::ZeroVector);
 	ActorPostLeft->SetRelativeRotation(FRotator::ZeroRotator);
-	ActorPostRight->SetRelativeLocation(FVector::ZeroVector);
-	ActorPostRight->SetRelativeRotation(FRotator::ZeroRotator);
+	const FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, true);
+	ActorPostRight->SetWorldLocationAndRotation(GetActorLocation(), GetActorRotation());
+	//ActorPostRight->SetRelativeRotation(FRotator::ZeroRotator);
+	ActorPostLeft->AttachToComponent(BoxCollision, AttachmentTransformRules);
+	ActorPostRight->AttachToComponent(BoxCollision, AttachmentTransformRules);
 }
 
 void AAIWallSideWalk::BeginPlay()
@@ -31,20 +35,41 @@ void AAIWallSideWalk::BeginPlay()
 
 }
 
+
+
 void AAIWallSideWalk::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-#if WITH_EDITOR
+	if(bMovementToWall)
+	{
+		MoveToWall(DeltaTime);
+	}
+	else if(bOnWallExit)
+	{
+		
+	}
+	
 
-	DrawDebugSphere(GetWorld(), GetActorLocation() + ActorPostLeft ->GetRelativeLocation() ,30, 10,FColor::Yellow, false, 0.1, 0, 2);
-	DrawDebugSphere(GetWorld(), GetActorLocation() + ActorPostRight->GetRelativeLocation(), 30, 10, FColor::Cyan, false, 0.1, 0, 2);
+#if WITH_EDITOR
+	
+	DrawDebugSphere(GetWorld(),  ActorPostLeft ->K2_GetComponentLocation(),30, 10,FColor::Yellow, false, 0.1, 0, 2);
+	DrawDebugSphere(GetWorld(), ActorPostRight->K2_GetComponentLocation(), 30, 10, FColor::Cyan, false, 0.1, 0, 2);
 #endif
 	
 }
 
 void AAIWallSideWalk::Action()
 {
+	if(PlayerOverlap && (!bMovementToWall && !bOnWallWalking))
+	{
+		PlayerOverlap->GetCapsuleComponent()->SetCapsuleRadius(NewCapsuleRadius);
+		PlayerOverlap->MovingplayerState = EMovementStay::EM_Straff;
+		PlayerOverlap->SetMovementType();
+		FInputModeUIOnly input;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(input);
+		bMovementToWall = true;
+	}
 }
 
 void AAIWallSideWalk::DestroidAction()
@@ -59,12 +84,17 @@ void AAIWallSideWalk::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	{
 		if(FVector::CrossProduct(DirectionalArrow->GetForwardVector(), GetActorLocation()- PlayerOverlap->GetActorLocation()).Z<0)
 		{
+			EntryPos = ActorPostRight->K2_GetComponentLocation();
+			
 			UE_LOG(LogTemp, Warning, TEXT("Derecha"));
 		}
 		else
 		{
+			EntryPos = ActorPostLeft->K2_GetComponentLocation();
 			UE_LOG(LogTemp, Warning, TEXT("Izquierda"));
 		}
+		PlayerOverlap->CurrentInteractive = this;
+		PlayerOverlap->WallDirection = DirectionalArrow->GetRightVector().GetSafeNormal();
 	}
 }
 
@@ -74,10 +104,52 @@ void AAIWallSideWalk::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 	PlayerOverlap = Cast<AGhostStoryV2Character>(OtherActor);
 	if (PlayerOverlap)
 	{
-
-	}
-	else
-	{
+		EntryPos = FVector::ZeroVector;
+		PlayerOverlap->CurrentInteractive = nullptr;
 		PlayerOverlap = nullptr;
+		bMovementToWall = false;
+		bOnWallWalking = false;
+	
+		
 	}
+	
+    	
+	
+}
+
+void AAIWallSideWalk::MoveToWall(float deltaSeconds)
+{
+	if(PlayerOverlap)
+	{
+		
+		if(FVector::DotProduct(PlayerOverlap->GetActorForwardVector(), DirectionalArrow->GetForwardVector()) <=0.98)
+		{
+			if (FVector::CrossProduct(PlayerOverlap->GetActorForwardVector(), DirectionalArrow->GetForwardVector()).Z < 0)
+			{
+				GetWorld()->GetFirstPlayerController()->AddYawInput(-1);
+			}
+			else
+			{
+				GetWorld()->GetFirstPlayerController()->AddYawInput(1);
+			}
+		}
+		EntryPos.Z = PlayerOverlap->GetActorLocation().Z;	
+		if(FVector::Dist(PlayerOverlap->GetActorLocation(), EntryPos)>=5.0f)
+		{
+			PlayerOverlap->SetActorLocation(FMath::VInterpTo(PlayerOverlap->GetActorLocation(), EntryPos, deltaSeconds, 8.0f));
+		}
+		else
+		{
+			FInputModeGameOnly input;
+			GetWorld()->GetFirstPlayerController()->SetInputMode(input);
+			bMovementToWall = false;
+			bOnWallWalking = true;
+			PlayerOverlap->bCanTurnRate = true;
+			PlayerOverlap->bCanTurnUp = true;
+		}
+	}
+}
+
+void AAIWallSideWalk::ExitWall()
+{
 }

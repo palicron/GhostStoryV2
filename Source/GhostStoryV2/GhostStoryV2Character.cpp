@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
+#include "Interactive/ActionInteractive.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -63,6 +64,9 @@ void AGhostStoryV2Character::SetupPlayerInputComponent(class UInputComponent* Pl
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AGhostStoryV2Character::StartCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AGhostStoryV2Character::EndCrouch);
+
+	PlayerInputComponent->BindAction("MovementAction", IE_Pressed, this, &AGhostStoryV2Character::TryToMakeAMoveAction);
+	
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
@@ -366,6 +370,14 @@ void AGhostStoryV2Character::SetCameraShake()
 		case EMovementStay::EM_Lader:
 			break;
 		}
+	}
+}
+
+void AGhostStoryV2Character::TryToMakeAMoveAction()
+{
+	if(CurrentInteractive)
+	{
+		CurrentInteractive->Action();
 	}
 }
 

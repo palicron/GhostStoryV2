@@ -19,16 +19,24 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player entry")
 	class AGhostStoryV2Character* PlayerOverlap;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player entry")
 	class UChildActorComponent* ActorPostLeft;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player entry")
 	class UChildActorComponent* ActorPostRight;
 
+
+	bool bMovementToWall = false;
+	bool bOnWallWalking = false;
+	bool bOnWallExit = false;
+	FVector EntryPos = FVector::ZeroVector;
+
 protected:
 	virtual void BeginPlay() override;
 
-	
+	UFUNCTION()
+		void MoveToWall(float deltaSeconds);
+	UFUNCTION()
+		void ExitWall();
 
 public:
 	// Called every frame

@@ -16,6 +16,8 @@ public:
 	AActionInteractive();
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Movment")
 	class UArrowComponent* DirectionalArrow;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movment")
+		float NewCapsuleRadius = 30.0f;
 
 protected:
 	// Called when the game starts or when spawned

@@ -41,34 +41,37 @@ void AAIWallSideWalk::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(bMovementToWall)
+	if (bMovementToWall)
 	{
 		MoveToWall(DeltaTime);
 	}
-	else if(bOnWallExit)
+	else if (bOnWallExit)
 	{
-		
+
 	}
-	
+
 
 #if WITH_EDITOR
-	
-	DrawDebugSphere(GetWorld(),  ActorPostLeft ->K2_GetComponentLocation(),30, 10,FColor::Yellow, false, 0.1, 0, 2);
+
+	DrawDebugSphere(GetWorld(), ActorPostLeft->K2_GetComponentLocation(), 30, 10, FColor::Yellow, false, 0.1, 0, 2);
 	DrawDebugSphere(GetWorld(), ActorPostRight->K2_GetComponentLocation(), 30, 10, FColor::Cyan, false, 0.1, 0, 2);
 #endif
-	
+
 }
 
 void AAIWallSideWalk::Action()
 {
-	if(PlayerOverlap && (!bMovementToWall && !bOnWallWalking))
+
+	
+	if(PlayerOverlap && (!bMovementToWall && !bOnWallWalking) && FVector::DotProduct((GetActorLocation() - PlayerOverlap->GetActorLocation()).GetSafeNormal(), PlayerOverlap->GetActorForwardVector().GetSafeNormal()) >= 0.6)
 	{
-		PlayerOverlap->GetCapsuleComponent()->SetCapsuleRadius(NewCapsuleRadius);
+		
 		PlayerOverlap->MovingplayerState = EMovementStay::EM_Straff;
 		PlayerOverlap->SetMovementType();
 		FInputModeUIOnly input;
 		GetWorld()->GetFirstPlayerController()->SetInputMode(input);
 		bMovementToWall = true;
+		PlayerOverlap->GetCapsuleComponent()->SetCapsuleRadius(NewCapsuleRadius);
 	}
 }
 
@@ -80,21 +83,20 @@ void AAIWallSideWalk::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	PlayerOverlap = Cast<AGhostStoryV2Character>(OtherActor);
-	if(PlayerOverlap)
+	if (PlayerOverlap)
 	{
-		if(FVector::CrossProduct(DirectionalArrow->GetForwardVector(), GetActorLocation()- PlayerOverlap->GetActorLocation()).Z<0)
+		if (FVector::CrossProduct(DirectionalArrow->GetForwardVector(), GetActorLocation() - PlayerOverlap->GetActorLocation()).Z < 0)
 		{
 			EntryPos = ActorPostRight->K2_GetComponentLocation();
-			
-			UE_LOG(LogTemp, Warning, TEXT("Derecha"));
+
 		}
 		else
 		{
-			EntryPos = ActorPostLeft->K2_GetComponentLocation();
-			UE_LOG(LogTemp, Warning, TEXT("Izquierda"));
+			EntryPos = ActorPostLeft->K2_GetComponentLocation();	
 		}
 		PlayerOverlap->CurrentInteractive = this;
 		PlayerOverlap->WallDirection = DirectionalArrow->GetRightVector().GetSafeNormal();
+		
 	}
 }
 
@@ -106,39 +108,54 @@ void AAIWallSideWalk::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 	{
 		EntryPos = FVector::ZeroVector;
 		PlayerOverlap->CurrentInteractive = nullptr;
+		PlayerOverlap->GetCapsuleComponent()->SetCapsuleRadius(40.0f);
+		PlayerOverlap->MovingplayerState = EMovementStay::EM_Walk;
+		PlayerOverlap->SetMovementType();
+		FInputModeGameOnly input;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(input);
+
 		PlayerOverlap = nullptr;
 		bMovementToWall = false;
 		bOnWallWalking = false;
-	
-		
 	}
-	
-    	
-	
+
+
+
 }
 
 void AAIWallSideWalk::MoveToWall(float deltaSeconds)
 {
-	if(PlayerOverlap)
+	if (PlayerOverlap)
 	{
-		
-		if(FVector::DotProduct(PlayerOverlap->GetActorForwardVector(), DirectionalArrow->GetForwardVector()) <=0.98)
+		bool endRota = false;
+		bool endMove = false;
+		if (FVector::DotProduct(PlayerOverlap->GetActorForwardVector(), DirectionalArrow->GetForwardVector()) <= 0.98)
 		{
 			if (FVector::CrossProduct(PlayerOverlap->GetActorForwardVector(), DirectionalArrow->GetForwardVector()).Z < 0)
 			{
-				GetWorld()->GetFirstPlayerController()->AddYawInput(-1);
+				GetWorld()->GetFirstPlayerController()->AddYawInput(-1.5);
 			}
 			else
 			{
-				GetWorld()->GetFirstPlayerController()->AddYawInput(1);
+				GetWorld()->GetFirstPlayerController()->AddYawInput(1.5
+);
 			}
 		}
-		EntryPos.Z = PlayerOverlap->GetActorLocation().Z;	
-		if(FVector::Dist(PlayerOverlap->GetActorLocation(), EntryPos)>=5.0f)
+		else
+		{
+			endRota = true;
+		}
+		EntryPos.Z = PlayerOverlap->GetActorLocation().Z;
+		if (FVector::Dist(PlayerOverlap->GetActorLocation(), EntryPos) >= 5.0f)
 		{
 			PlayerOverlap->SetActorLocation(FMath::VInterpTo(PlayerOverlap->GetActorLocation(), EntryPos, deltaSeconds, 8.0f));
 		}
 		else
+		{
+			endMove = true;
+
+		}
+		if(endRota && endMove)
 		{
 			FInputModeGameOnly input;
 			GetWorld()->GetFirstPlayerController()->SetInputMode(input);

@@ -292,6 +292,8 @@ void AGhostStoryV2Character::SetMovementType(FVector BlockMovementVector, float 
 		bCanControlCharacterRight = true;
 		bCanTurnRate = true;
 		bCanTurnUp = true;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(),0)->ViewYawMax=359.999f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMin = 0.0f;
 		GetCharacterMovement()->MaxWalkSpeed = walkingBaseSpeed;
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		break;
@@ -321,6 +323,8 @@ void AGhostStoryV2Character::SetMovementType(FVector BlockMovementVector, float 
 		bCanControlCharacterRight = true;
 		bCanTurnRate = false;
 		bCanTurnUp = false;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMax = 75.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMin = -75.0f;
 		GetCharacterMovement()->MaxWalkSpeed = WallWalkBaseSpeed;
 		if (BlockMovementVector != FVector::ZeroVector)
 		{
@@ -332,6 +336,8 @@ void AGhostStoryV2Character::SetMovementType(FVector BlockMovementVector, float 
 	case EMovementStay::EM_Lader:
 		bCanControlCharacterForward = true;
 		bCanControlCharacterRight = false;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMax = 85.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMin = -85.0f;
 		bCanTurnRate = true;
 		bCanTurnUp = true;
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);

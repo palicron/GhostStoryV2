@@ -263,7 +263,6 @@ void AGhostStoryV2Character::Probe()
 	if (MovingplayerState == EMovementStay::EM_Crouch)
 	{
 
-
 		GetCapsuleComponent()->SetCapsuleRadius(ProbeCapsuleRadius);
 		GetCharacterMovement()->CrouchedHalfHeight = ProbeCapsuleMidheigt;
 		GetCharacterMovement()->MaxWalkSpeedCrouched = 150.f;
@@ -336,13 +335,12 @@ void AGhostStoryV2Character::SetMovementType(FVector BlockMovementVector, float 
 	case EMovementStay::EM_Lader:
 		bCanControlCharacterForward = true;
 		bCanControlCharacterRight = false;
-		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMax = 85.0f;
-		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMin = -85.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMax = 75.0f;
+		UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->ViewYawMin = -75.0f;
 		bCanTurnRate = true;
 		bCanTurnUp = true;
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-		break;
-	
+		break;	
 	}
 }
 
@@ -372,9 +370,19 @@ void AGhostStoryV2Character::SetCameraShake()
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), WalkWalking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
 			break;
 		case EMovementStay::EM_Climing:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), WalkWalking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
 			break;
 		case EMovementStay::EM_Lader:
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), WalkWalking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
+			FHitResult ladderHit;
+			if(GetWorld()->LineTraceSingleByChannel(ladderHit,GetActorLocation(),GetActorLocation()+(GetActorUpVector().Normalize()*-350.f),ECollisionChannel::ECC_Visibility))
+			{
+				float dis = (ladderHit.Location - GetActorLocation()).Size();
+				UE_LOG(LogTemp, Warning, TEXT("Distancia %f"), dis);
+			}
+			
 			break;
+		
 		}
 	}
 }
@@ -386,6 +394,8 @@ void AGhostStoryV2Character::TryToMakeAMoveAction()
 		CurrentInteractive->Action();
 	}
 }
+
+
 
 
 

@@ -43,6 +43,8 @@ public:
 protected:
 	virtual void BeginPlay();
 
+	
+
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
@@ -157,11 +159,13 @@ protected:
 
 	virtual void AddControllerYawInput(float Val) override;
 
+	// cuadra el shake y realiz acciones adicionales 
 	UFUNCTION(BlueprintCallable)
 		void SetCameraShake();
 
 	void TryToMakeAMoveAction();
-	
+
+
 
 
 public:

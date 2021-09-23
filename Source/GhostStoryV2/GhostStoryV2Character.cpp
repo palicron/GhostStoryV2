@@ -4,6 +4,7 @@
 #include "GhostStoryV2Projectile.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
@@ -92,6 +93,7 @@ void AGhostStoryV2Character::Tick(float DeltaSeconds)
 		}
 	}
 	SetCameraShake();
+	CheckMovmentBehavior();
 
 }
 
@@ -344,7 +346,7 @@ void AGhostStoryV2Character::SetMovementType(FVector BlockMovementVector, float 
 	}
 }
 
-void AGhostStoryV2Character::SetCameraShake()
+void AGhostStoryV2Character::SetCameraShake() const
 {
 	if (FMath::Abs(GetVelocity().Size()) <= 5.0f)
 	{
@@ -374,13 +376,7 @@ void AGhostStoryV2Character::SetCameraShake()
 			break;
 		case EMovementStay::EM_Lader:
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), WalkWalking_Camera, GetActorLocation(), 100.0, 0.0, 0.0);
-			FHitResult ladderHit;
-			if(GetWorld()->LineTraceSingleByChannel(ladderHit,GetActorLocation(),GetActorLocation()+(GetActorUpVector().Normalize()*-350.f),ECollisionChannel::ECC_Visibility))
-			{
-				float dis = (ladderHit.Location - GetActorLocation()).Size();
-				UE_LOG(LogTemp, Warning, TEXT("Distancia %f"), dis);
-			}
-			
+		
 			break;
 		
 		}
@@ -393,6 +389,61 @@ void AGhostStoryV2Character::TryToMakeAMoveAction()
 	{
 		CurrentInteractive->Action();
 	}
+}
+
+void AGhostStoryV2Character::CheckMovmentBehavior()
+{
+
+	switch (MovingplayerState)
+	{
+	case EMovementStay::EM_Walk:
+	
+		break;
+	case EMovementStay::EM_Spring:
+	
+		break;
+	case EMovementStay::EM_Crouch:
+		
+		break;
+	case EMovementStay::EM_Probe:
+	
+		break;
+	case EMovementStay::EM_Straff:
+	
+		break;
+	case EMovementStay::EM_Climing:
+	
+		break;
+	case EMovementStay::EM_Lader:
+		FHitResult ladderHit;
+		if (GetWorld()->LineTraceSingleByChannel(ladderHit, GetActorLocation(), GetActorLocation() + (GetActorUpVector().Normalize() * -350.f), ECollisionChannel::ECC_Visibility))
+		{
+			
+		
+			if((ladderHit.Location - GetActorLocation()).Size()<170.0f)
+			{
+				if (CurrentInteractive)
+				{
+					CurrentInteractive->DestroidAction();
+					
+				}
+			}
+		}
+		if(GetWorld()->LineTraceSingleByChannel(ladderHit, GetActorLocation(), GetActorLocation() + (CurrentInteractive->GetActorForwardVector().Normalize() * 150.f), ECollisionChannel::ECC_Visibility))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Alfrente"));
+		}
+		else
+		{
+			CurrentInteractive->DestroidAction();
+			UE_LOG(LogTemp, Warning, TEXT("NO alfrente"));
+		}
+
+		break;
+
+	}
+	
+
 }
 
 

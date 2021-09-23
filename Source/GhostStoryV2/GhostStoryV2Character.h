@@ -161,9 +161,11 @@ protected:
 
 	// cuadra el shake y realiz acciones adicionales 
 	UFUNCTION(BlueprintCallable)
-		void SetCameraShake();
+		void SetCameraShake() const;
 
 	void TryToMakeAMoveAction();
+
+	void CheckMovmentBehavior();
 
 
 

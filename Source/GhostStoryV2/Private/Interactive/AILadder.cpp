@@ -36,16 +36,22 @@ void AAILadder::Tick(float DeltaTime)
 void AAILadder::Action()
 {
 	
-	if (PlayerOverlap )
+	if (PlayerOverlap && !OnLadder)
 	{
 		PlayerOverlap->MovingplayerState = EMovementStay::EM_Lader;
 		PlayerOverlap->SetMovementType();
+		FVector posnew = PlayerOverlap->GetActorLocation();
+		posnew.Z += 50.0f;
+		PlayerOverlap->SetActorLocation(posnew);
 		OnLadder = true;	
 	}
 }
 
 void AAILadder::DestroidAction()
 {
+	PlayerOverlap->MovingplayerState = EMovementStay::EM_Walk;
+	PlayerOverlap->SetMovementType();
+	OnLadder = false;
 }
 
 
@@ -97,9 +103,10 @@ void AAILadder::OnOverlapEndUpper(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		PlayerOverlap->CurrentInteractive = nullptr;
 		PlayerOverlap->WallDirection = FVector::ZeroVector;
+	
 	}
 	else if (exit && PlayerOverlap && OnLadder)
 	{
-
+		
 	}
 }
